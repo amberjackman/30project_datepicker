@@ -14,7 +14,7 @@ class DatePicker {
     'December',
   ];
 
-  #calendarDate ={
+  #calendarDate = {
     data:'', 
     date:0,
     month:0,
@@ -39,8 +39,8 @@ class DatePicker {
   calendarDatesEl;
 
   constructor() {
-    this.initCalendarDate();
     this.assignElement();
+    this.initCalendarDate();
     this.addEvent();
   }
 
@@ -69,8 +69,30 @@ class DatePicker {
   }
 
   addEvent() {
-    this.dateInputEl.addEventListener("click", this.toggleCalendar.bind(this));
+    this.dateInputEl.addEventListener('click',this.toggleCalendar.bind(this));
+    this.nextBtnEl.addEventListener('click',this.moveToNextMonth.bind(this))
+    this.prevBtnEl.addEventListener('click',this.moveToPrevMonth.bind(this))
   }
+
+moveToNextMonth() {
+  this.#calendarDate.month++;
+  if(this.#calendarDate.month > 11){
+    this.#calendarDate.month = 0;
+    this.#calendarDate.year++;
+  }
+  this.updateMonth();
+  this.updateDates();
+}
+
+moveToPrevMonth() {
+  this.#calendarDate.month--;
+  if(this.#calendarDate.month < 0){
+    this.#calendarDate.month = 11;
+    this.#calendarDate.year--;
+  }
+  this.updateMonth();
+  this.updateDates();
+}
 
   toggleCalendar() {
     this.calendarEl.classList.toggle('active');
@@ -78,9 +100,9 @@ class DatePicker {
     this.updateDates();
   }
   updateMonth() {
-    console.log(this.#calendarDate.year);
     this.monthContentEl.textContent = `${this.#calendarDate.year} ${
-      this.monthData[this.#calendarDate.month]}`
+      this.monthData[this.#calendarDate.month]
+    }`;
   }
   updateDates() {
     this.calendarDatesEl.innerHTML = '';
@@ -92,12 +114,40 @@ class DatePicker {
       const fragment = new DocumentFragment();
       for(let i =0; i < numberOfDates; i++){
         const dateEl = document.createElement('div');
-        date.classList.add('date');
+        dateEl.classList.add('date');
         dateEl.textContent = i+1;
         dateEl.dataset.date =i+1;
         fragment.appendChild(dateEl);
       }
+      fragment.firstChild.style.gridColumnStart = new Date(this.#calendarDate.year, this.#calendarDate.month, 1).getDay()
       this.calendarDatesEl.appendChild(fragment);
+      this.colorSaturday(); 
+  }
+
+  markToday() {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currnetYear = currentDate.getFullYear();
+    const today = currentDate.getDate();
+    if(currnetYear === this.#calendarDate.year && 
+      currentMonth === this.#calendarDate.month)
+      {
+      this.calendarDatesEl
+      .querySelector(`[data-date='${today}']`)
+      .classList.add('today');
+    }  
+  }
+
+  colorSaturday() {
+    const saturdayEls = this.calendarDatesEl.querySelectorAll(
+      `.date:nth-child(7n+${
+        8 - 
+        new Date(this.#calendarDate.year, this.#calendarDate.month, 1).getDay()
+      })`,
+    );
+    for (let i = 0; i < saturdayEls.length; i++) {
+      saturdayEls[i].style.color = 'blue';
+    } 
   }
 }
 

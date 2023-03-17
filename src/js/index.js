@@ -57,6 +57,13 @@ class DatePicker {
     };
   }
 
+  setDateInput() {
+    this.dateInputEl.textContent = this.formateDate(this.selectedDate.data);
+    this.dateInputEl.dataset.value = this.selectedDate.data;
+  };
+
+  
+
   assignElement() {
     this.datePickerEl = document.getElementById('date-picker');
     this.dateInputEl = this.datePickerEl.querySelector('#date-input');
@@ -122,6 +129,8 @@ moveToPrevMonth() {
       fragment.firstChild.style.gridColumnStart = new Date(this.#calendarDate.year, this.#calendarDate.month, 1).getDay()
       this.calendarDatesEl.appendChild(fragment);
       this.colorSaturday(); 
+      this.colorSunday();
+      this.markToday();
   }
 
   markToday() {
@@ -129,9 +138,10 @@ moveToPrevMonth() {
     const currentMonth = currentDate.getMonth();
     const currnetYear = currentDate.getFullYear();
     const today = currentDate.getDate();
-    if(currnetYear === this.#calendarDate.year && 
-      currentMonth === this.#calendarDate.month)
-      {
+    if(
+      currnetYear === this.#calendarDate.year && 
+      currentMonth === this.#calendarDate.month
+      ) {
       this.calendarDatesEl
       .querySelector(`[data-date='${today}']`)
       .classList.add('today');
@@ -149,6 +159,23 @@ moveToPrevMonth() {
       saturdayEls[i].style.color = 'blue';
     } 
   }
+
+  colorSunday() {
+    const sundayEls = this.calendarDatesEl.querySelectorAll(
+      `.date:nth-child(7n+${
+      (9 -
+        new Date(
+          this.#calendarDate.year, 
+          this.#calendarDate.month,
+          1,
+        ).getDay()) % 8
+      })`,
+    );
+
+      for(let i=0; i < sundayEls.length; i++) {
+        sundayEls[i].style.color='red';
+      };
+    }
 }
 
 new DatePicker();

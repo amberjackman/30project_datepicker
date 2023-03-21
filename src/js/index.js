@@ -39,10 +39,25 @@ class DatePicker {
   calendarDatesEl;
 
   constructor() {
-    this.assignElement();
+    this.initSelectedDate();
     this.initCalendarDate();
+    this.assignElement();
+    // this.setDateInput();
     this.addEvent();
   }
+
+  initSelectedDate() {
+    this.selectedDate = {...this.#calendarDate};  
+  }
+
+  // setDateInput() {
+  //   this.dateInputEl.textContent = this.formateDate(this.selectedDate.data);
+  //   this.dateInputEl.dataset.value = this.selectedDate.data;
+  // };
+
+  
+
+
 
   initCalendarDate() {
     const data = new Date();
@@ -57,12 +72,7 @@ class DatePicker {
     };
   }
 
-  setDateInput() {
-    this.dateInputEl.textContent = this.formateDate(this.selectedDate.data);
-    this.dateInputEl.dataset.value = this.selectedDate.data;
-  };
 
-  
 
   assignElement() {
     this.datePickerEl = document.getElementById('date-picker');
@@ -79,6 +89,45 @@ class DatePicker {
     this.dateInputEl.addEventListener('click',this.toggleCalendar.bind(this));
     this.nextBtnEl.addEventListener('click',this.moveToNextMonth.bind(this))
     this.prevBtnEl.addEventListener('click',this.moveToPrevMonth.bind(this))
+    this.calendarDatesEl.addEventListener(
+      'click',this.onClickSelectDate.bind(this),
+    );
+  }
+
+  onClickSelectDate(event) {
+    const eventTarget = event.target;
+    if(eventTarget.dataset.date) {
+      this.calendarDatesEl.querySelector(".selected")
+      ?.classList.remove("selected");
+      eventTarget.classList.add("selected");
+      this.selectedDate = {
+        data: new Date(
+          this.#calendarDate.year, 
+          this.#calendarDate.month, 
+          eventTarget.dataset.date,
+          ),
+        year:this.#calendarDate.year,
+        month:this.#calendarDate.month,
+        date:eventTarget.dataset.date, 
+      };
+      // this.setDateInput();
+      this.calendarEl.classList.remove('active');
+    }
+  }
+  
+  formateDate(dateData) {
+    let date = dateData.getDate();
+    if(date < 10) {
+      date = `0${date}`;
+    } 
+    
+    let month = dateData.getMonth()+1;
+    if(month < 10) {
+      month = `0${month}`;
+    }
+
+    let year = dateData.getFullYear();
+    return `${year}/${month}/${date}`;
   }
 
 moveToNextMonth() {
@@ -102,20 +151,25 @@ moveToPrevMonth() {
 }
 
   toggleCalendar() {
+    if (this.calendarEl.classList.contains('active')){
+      this.#calendarDate = {...this.selectedDate};
+    }
     this.calendarEl.classList.toggle('active');
     this.updateMonth();
     this.updateDates();
   }
+
   updateMonth() {
     this.monthContentEl.textContent = `${this.#calendarDate.year} ${
       this.monthData[this.#calendarDate.month]
     }`;
   }
+
   updateDates() {
     this.calendarDatesEl.innerHTML = '';
     const numberOfDates = new Date(
       this.#calendarDate.year, 
-      this.#calendarDate.month+1,0
+      this.#calendarDate.month+1,0,
       ).getDate();
 
       const fragment = new DocumentFragment();
@@ -126,11 +180,23 @@ moveToPrevMonth() {
         dateEl.dataset.date =i+1;
         fragment.appendChild(dateEl);
       }
-      fragment.firstChild.style.gridColumnStart = new Date(this.#calendarDate.year, this.#calendarDate.month, 1).getDay()
+      fragment.firstChild.style.gridColumnStart = new Date(this.#calendarDate.year, this.#calendarDate.month, 1).getDay()+1
       this.calendarDatesEl.appendChild(fragment);
       this.colorSaturday(); 
       this.colorSunday();
       this.markToday();
+      this.markSelectedDate();
+  }
+
+
+  markSelectedDate() {
+    if(this.selectedDate.year === this.#calendarDate.year && 
+      this.selectedDate.month === this.#calendarDate.month
+      ) {
+        this.calendarDatesEl
+        .querySelector(`[data-date='${this.selectedDate.date}']`)
+        .classList.add('selected')
+      }
   }
 
   markToday() {
@@ -168,7 +234,7 @@ moveToPrevMonth() {
           this.#calendarDate.year, 
           this.#calendarDate.month,
           1,
-        ).getDay()) % 8
+        ).getDay()) % 7
       })`,
     );
 
